@@ -20,7 +20,17 @@ total_score > 35
 group by 1,2
 
 --Identify students whose Day 2 score was strictly higher than their Day 1 score.
-
+select
+t1.student_name as full_name,
+t1.total_score as day1score,
+t2.total_score as day2score
+from
+day_1_exam as t1
+join
+day_2_exam as t2
+on t1.hall_ticket_no = t2.hall_ticket_no
+where
+t2.total_score > t1.total_score
 
 --Do passing students work faster? Join day_2_exam with qaday2 to find the average 'Total Time' for students who 'Pass' vs those who 'Fail'.
 select
@@ -33,13 +43,60 @@ on t1.hall_ticket_no = t2.hall_ticket_no
 group by 1
 
 --Which students have NULLs in Q1 or Q2 but still passed the Day 2 exam? (This helps identify students who skip but are still accurate).
+select
+t1.student_name as full_name,
+t1.total_score as day1score,
+t2.total_score as day2score
+from
+day_1_exam as t1
+join
+day_2_exam as t2
+on t1.hall_ticket_no = t2.hall_ticket_no
+where
+t2.total_score > t1.total_score
 
 --For each department, show the total number of registrations, total students who took Day 1, and total students who took Day 2.
-
+select
+t1.department_name,
+count(t1.hall_ticket_no) as totalregistrations,
+count(t2.hall_ticket_no) as attendedday1,
+count(t3.hall_ticket_no) as attendedday2
+from
+"RSVP_New" as t1
+left join day_1_exam as t2
+on t1.hall_ticket_no = t2.hall_ticket_no
+left join day_2_exam as t3
+on t1.hall_ticket_no = t3.hall_ticket_no
+group by 1
 
 --Using the dob (Date of Birth) in RSVP_New, identify students born before the year 2000 as 'Senior Students' and those born in 2000 or later as 'Junior Students'.
+select
+full_name, 
+dob,
+case
+when dob < '2000-01-01' then 'senior students'
+else 'junior students'
+end as age_group
+from
+"RSVP_New"
 
 --Join day_2_exam with qaday2. Create a logic: If 'Total Time' is less than 1000 and 'Result' is 'Pass', label them as 'High Efficiency'. If they passed but took longer, label them as 'Hard Worker'.
+select
+t1.hall_ticket_no,
+t1.result_status,
+case
+when
+"Total Time"<1000 
+and result_status='Pass' then 'high efficiency'
+when
+"Total Time">1000
+and result_status = 'Pass' then 'hard worker'
+else 'need support'
+end as efficiency_rank
+from
+day_2_exam as t1
+join qaday2 as t2
+on t1.hall_ticket_no = t2.hall_ticket_no
 
 --If a student finished Question 1 (Q1) in under 15 seconds, they are 'Quick to Fall in Love.' If they took over 60 seconds, they are 'Hard to Get.' If they skipped (NULL), they are 'Focusing on their Career'.
 
@@ -48,4 +105,13 @@ group by 1
 --Who registered for the class before 'AMENAH AHSAN'?(use subquery)
 
 --Show the details of students who are among the 5 fastest finishers of the Day 2 exam.
-
+select
+t1.*,
+"Total Time"
+from
+"RSVP_New" as t1
+join 
+qaday2 as t2
+on t1.hall_ticket_no = t2.hall_ticket_no
+ORDER BY "Total Time" ASC
+LIMIT 5
