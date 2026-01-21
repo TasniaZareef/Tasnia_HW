@@ -134,6 +134,7 @@ ORDER BY MIN_SCORE desc
 
 Q16: For passed students only, show count, average, max and min scores grouped by whether score is above 40.
 select
+distinct result_status,
 count(*),
 avg(total_score),
 max(total_score),
@@ -141,7 +142,9 @@ min(total_score)
 from
 day_2_exam
 where
-result_status = 'Pass'
+result_status = 'Pass' and
+total_score > 40
+group by 1
 
 Q17: Count and average score for each result status, only for scores not equal to 35.
 select
